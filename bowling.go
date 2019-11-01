@@ -16,7 +16,7 @@ func (g *Game) Roll(n int) {
 
 // Score ...
 func (g *Game) Score() int {
-	return g.sumOfFrames() + g.spareBonus()
+	return g.sumOfFrames() + g.spareBonus() + g.strikeBonus()
 }
 
 type frame struct {
@@ -25,15 +25,28 @@ type frame struct {
 }
 
 func (f *frame) isFinished() bool {
+	if *f.first == 10 {
+		return true
+	}
 	return f.second != nil
 }
 
 func (f *frame) sum() int {
+	if f.second == nil {
+		return *f.first
+	}
 	return *f.first + *f.second
 }
 
 func (f *frame) isSpare() bool {
+	if f.second == nil {
+		return false
+	}
 	return *f.first+*f.second == 10
+}
+
+func (f *frame) isStrike() bool {
+	return *f.first == 10
 }
 
 func (g *Game) lastFrame() *frame {
@@ -64,4 +77,15 @@ func (g *Game) spareBonus() int {
 		}
 	}
 	return spareBonus
+}
+
+func (g *Game) strikeBonus() int {
+	strikeBonus := 0
+	for i, frame := range g.frames {
+		if frame.isStrike() {
+			strikeBonus += *g.frames[i+1].first
+			strikeBonus += *g.frames[i+1].second
+		}
+	}
+	return strikeBonus
 }

@@ -48,21 +48,23 @@ func TestScore(t *testing.T) {
 			},
 			want: 29,
 		},
-		// {
-		// 	desc: "Strike",
-		// 	rollAll: func(g *bowling.Game) {
-		// 		g.Roll(1)
-		// 		g.Roll(1)
+		{
+			desc: "Strike",
+			rollAll: func(g *bowling.Game) {
+				g.Roll(1)
+				g.Roll(1)
 
-		// 		g.Roll(10)
+				g.Roll(10)
 
-		// 		for i := 0; i < 8; i++ {
-		// 			g.Roll(1)
-		// 			g.Roll(1)
-		// 		}
-		// 	},
-		// 	want: 30,
-		// },
+				g.Roll(2)
+				g.Roll(1)
+				for i := 0; i < 7; i++ {
+					g.Roll(1)
+					g.Roll(1)
+				}
+			},
+			want: 32,
+		},
 	}
 
 	for _, tc := range testCases {
