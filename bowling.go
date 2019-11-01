@@ -2,32 +2,65 @@ package bowling
 
 // Game ...
 type Game struct {
-	rolls []int
+	frames []frame
 }
 
 // Roll ...
 func (g *Game) Roll(n int) {
-	g.rolls = append(g.rolls, n)
+	if g.hasJustStarted() || g.lastFrame().isFinished() {
+		g.startNewFrame(n)
+	} else {
+		g.lastFrame().second = &n
+	}
 }
 
 // Score ...
 func (g *Game) Score() int {
-	return g.sumOfRolls() + g.spareBonus()
+	return g.sumOfFrames() + g.spareBonus()
 }
 
-func (g *Game) sumOfRolls() int {
+type frame struct {
+	first  *int
+	second *int
+}
+
+func (f *frame) isFinished() bool {
+	return f.second != nil
+}
+
+func (f *frame) sum() int {
+	return *f.first + *f.second
+}
+
+func (f *frame) isSpare() bool {
+	return *f.first+*f.second == 10
+}
+
+func (g *Game) lastFrame() *frame {
+	return &g.frames[len(g.frames)-1]
+}
+
+func (g *Game) hasJustStarted() bool {
+	return len(g.frames) == 0
+}
+
+func (g *Game) startNewFrame(n int) {
+	g.frames = append(g.frames, frame{first: &n})
+}
+
+func (g *Game) sumOfFrames() int {
 	sum := 0
-	for _, n := range g.rolls {
-		sum += n
+	for _, frame := range g.frames {
+		sum += frame.sum()
 	}
 	return sum
 }
 
 func (g *Game) spareBonus() int {
 	spareBonus := 0
-	for i := 0; i < 20; i += 2 {
-		if g.rolls[i]+g.rolls[i+1] == 10 {
-			spareBonus += g.rolls[i+2]
+	for i, frame := range g.frames {
+		if frame.isSpare() {
+			spareBonus += *g.frames[i+1].first
 		}
 	}
 	return spareBonus
