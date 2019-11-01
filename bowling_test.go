@@ -7,52 +7,57 @@ import (
 )
 
 func TestScore(t *testing.T) {
-	t.Run("Gutter game", func(t *testing.T) {
-		b := bowling.Game{}
-		for i := 0; i < 10; i++ {
-			b.Roll(0)
-			b.Roll(0)
-		}
-		got := b.Score()
-		want := 0
+	testCases := []struct {
+		desc    string
+		rollAll func(g *bowling.Game)
+		want    int
+	}{
+		{
+			desc: "Gutter game",
+			rollAll: func(g *bowling.Game) {
+				for i := 0; i < 10; i++ {
+					g.Roll(0)
+					g.Roll(0)
+				}
+			},
+			want: 0,
+		},
+		{
+			desc: "Simple game",
+			rollAll: func(g *bowling.Game) {
+				for i := 0; i < 10; i++ {
+					g.Roll(1)
+					g.Roll(1)
+				}
+			},
+			want: 20,
+		},
+		{
+			desc: "Spare",
+			rollAll: func(g *bowling.Game) {
+				g.Roll(1)
+				g.Roll(1)
 
-		if got != want {
-			t.Errorf("got %d, want %d", got, want)
-		}
-	})
+				g.Roll(3)
+				g.Roll(7)
 
-	t.Run("Simple game", func(t *testing.T) {
+				for i := 0; i < 8; i++ {
+					g.Roll(1)
+					g.Roll(1)
+				}
+			},
+			want: 29,
+		},
+	}
 
-		b := bowling.Game{}
-		for i := 0; i < 10; i++ {
-			b.Roll(1)
-			b.Roll(0)
-		}
-		got := b.Score()
-		want := 10
-
-		if got != want {
-			t.Errorf("got %d, want %d", got, want)
-		}
-	})
-
-	t.Run("Spare", func(t *testing.T) {
-		b := bowling.Game{}
-		b.Roll(1)
-		b.Roll(0)
-
-		b.Roll(3)
-		b.Roll(7)
-
-		for i := 0; i < 8; i++ {
-			b.Roll(1)
-			b.Roll(0)
-		}
-		got := b.Score()
-		want := 20
-
-		if got != want {
-			t.Errorf("got %d, want %d", got, want)
-		}
-	})
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			g := bowling.Game{}
+			tc.rollAll(&g)
+			got := g.Score()
+			if got != tc.want {
+				t.Errorf("got %d, want %d", got, tc.want)
+			}
+		})
+	}
 }
