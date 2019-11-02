@@ -3,7 +3,7 @@ package bowling_test
 import (
 	"testing"
 
-	bowling "github.com/gaborszakacs/bowling-golang"
+	"github.com/gaborszakacs/bowling-golang/bowling"
 )
 
 func TestScore(t *testing.T) {

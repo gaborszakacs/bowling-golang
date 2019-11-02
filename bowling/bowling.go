@@ -1,5 +1,7 @@
 package bowling
 
+import "fmt"
+
 // Game ...
 type Game struct {
 	frames []frame
@@ -17,6 +19,17 @@ func (g *Game) Roll(n int) {
 // Score ...
 func (g *Game) Score() int {
 	return g.sumOfFrames() + g.spareBonus() + g.strikeBonus()
+}
+
+// PrintRolls ...
+func (g *Game) PrintRolls() {
+	for _, frame := range g.frames {
+		if frame.second == nil {
+			fmt.Println(*frame.first)
+		} else {
+			fmt.Printf("%d | %d\n", *frame.first, *frame.second)
+		}
+	}
 }
 
 type frame struct {
