@@ -1,6 +1,7 @@
 package bowling_test
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/gaborszakacs/bowling-golang/bowling"
@@ -76,5 +77,33 @@ func TestScore(t *testing.T) {
 				t.Errorf("got %d, want %d", got, tc.want)
 			}
 		})
+	}
+}
+
+func TestPrintRolls(t *testing.T) {
+	buf := bytes.Buffer{}
+	g := bowling.Game{Out: &buf}
+	for i := 0; i < 9; i++ {
+		g.Roll(2)
+		g.Roll(3)
+	}
+	g.Roll(10)
+
+	g.PrintRolls()
+
+	got := buf.String()
+	want := `2 | 3
+2 | 3
+2 | 3
+2 | 3
+2 | 3
+2 | 3
+2 | 3
+2 | 3
+2 | 3
+10
+`
+	if got != want {
+		t.Errorf("got: \n%s\n\n wanted:\n%s", got, want)
 	}
 }

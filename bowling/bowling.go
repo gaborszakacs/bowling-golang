@@ -1,10 +1,14 @@
 package bowling
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+)
 
 // Game ...
 type Game struct {
 	frames []frame
+	Out    io.Writer
 }
 
 // Roll ...
@@ -25,9 +29,9 @@ func (g *Game) Score() int {
 func (g *Game) PrintRolls() {
 	for _, frame := range g.frames {
 		if frame.second == nil {
-			fmt.Println(*frame.first)
+			fmt.Fprintln(g.Out, *frame.first)
 		} else {
-			fmt.Printf("%d | %d\n", *frame.first, *frame.second)
+			fmt.Fprintf(g.Out, "%d | %d\n", *frame.first, *frame.second)
 		}
 	}
 }
