@@ -8,91 +8,77 @@ import (
 // Game ...
 type Game struct {
 	frames []frame
-	Out    io.Writer
+}
+
+type frame struct {
+	firstRoll  int
+	secondRoll int
+	rollsCount int
 }
 
 // Roll ...
 func (g *Game) Roll(n int) {
-	if g.hasJustStarted() || g.lastFrame().isFinished() {
-		g.startNewFrame(n)
+	if g.shouldStartNewFrame() {
+		g.startFrameWith(n)
 	} else {
-		g.lastFrame().second = &n
+		g.addToLastFrame(n)
 	}
 }
 
 // Score ...
 func (g *Game) Score() int {
-	return g.sumOfFrames() + g.spareBonus() + g.strikeBonus()
+	// fmt.Printf("%+v\n", g.frames)
+	// fmt.Printf("base: %d\n", g.baseScore())
+	// fmt.Printf("spare: %d\n", g.spareBonus())
+	// fmt.Printf("strike: %d\n", g.strikeBonus())
+	// panic("hi mom")
+	return g.baseScore() + g.spareBonus() + g.strikeBonus()
 }
 
-// PrintRolls ...
-func (g *Game) PrintRolls() {
-	for _, frame := range g.frames {
-		if frame.second == nil {
-			fmt.Fprintln(g.Out, *frame.first)
-		} else {
-			fmt.Fprintf(g.Out, "%d | %d\n", *frame.first, *frame.second)
-		}
+// PrintScoreCard ...
+func (g *Game) PrintScoreCard(w io.Writer) {
+	for _, f := range g.frames {
+		// fmt.Printf("%d | %d\n", f.firstRoll, f.secondRoll)
+		fmt.Fprintf(w, "%d | %d\n", f.firstRoll, f.secondRoll)
 	}
 }
-
-type frame struct {
-	first  *int
-	second *int
-}
-
-func (f *frame) isFinished() bool {
-	if *f.first == 10 {
+func (g *Game) shouldStartNewFrame() bool {
+	if len(g.frames) == 0 {
 		return true
 	}
-	return f.second != nil
-}
-
-func (f *frame) sum() int {
-	if f.second == nil {
-		return *f.first
+	if g.lastFrame().firstRoll == 10 {
+		return true
 	}
-	return *f.first + *f.second
+
+	return g.lastFrame().rollsCount == 2
 }
 
-func (f *frame) isSpare() bool {
-	if f.second == nil {
-		return false
-	}
-	return *f.first+*f.second == 10
+func (g *Game) startFrameWith(n int) {
+	g.frames = append(g.frames, frame{firstRoll: n, rollsCount: 1})
 }
 
-func (f *frame) isStrike() bool {
-	return *f.first == 10
+func (g *Game) addToLastFrame(n int) {
+	g.lastFrame().secondRoll = n
+	g.lastFrame().rollsCount++
 }
 
-func (g *Game) lastFrame() *frame {
-	return &g.frames[len(g.frames)-1]
-}
-
-func (g *Game) hasJustStarted() bool {
-	return len(g.frames) == 0
-}
-
-func (g *Game) startNewFrame(n int) {
-	g.frames = append(g.frames, frame{first: &n})
-}
-
-func (g *Game) sumOfFrames() int {
-	sum := 0
+func (g *Game) baseScore() int {
+	score := 0
 	for _, frame := range g.frames {
-		sum += frame.sum()
+		score += frame.score()
 	}
-	return sum
+
+	return score
 }
 
 func (g *Game) spareBonus() int {
 	spareBonus := 0
 	for i, frame := range g.frames {
 		if frame.isSpare() {
-			spareBonus += *g.frames[i+1].first
+			spareBonus += g.frames[i+1].firstRoll
 		}
 	}
+
 	return spareBonus
 }
 
@@ -100,9 +86,29 @@ func (g *Game) strikeBonus() int {
 	strikeBonus := 0
 	for i, frame := range g.frames {
 		if frame.isStrike() {
-			strikeBonus += *g.frames[i+1].first
-			strikeBonus += *g.frames[i+1].second
+			strikeBonus += g.frames[i+1].firstRoll + g.frames[i+1].secondRoll
 		}
 	}
+
 	return strikeBonus
+}
+
+func (g *Game) lastFrame() *frame {
+	return &g.frames[len(g.frames)-1]
+}
+
+func (f frame) isSpare() bool {
+	if f.isStrike() {
+		return false
+	}
+
+	return f.firstRoll+f.secondRoll == 10
+}
+
+func (f frame) isStrike() bool {
+	return f.firstRoll == 10
+}
+
+func (f frame) score() int {
+	return f.firstRoll + f.secondRoll
 }

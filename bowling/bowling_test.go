@@ -7,103 +7,86 @@ import (
 	"github.com/gaborszakacs/bowling-golang/bowling"
 )
 
-func TestScore(t *testing.T) {
+func TestScoreTable(t *testing.T) {
 	testCases := []struct {
 		desc    string
-		rollAll func(g *bowling.Game)
+		RollsFn func(g *bowling.Game)
 		want    int
 	}{
 		{
 			desc: "Gutter game",
-			rollAll: func(g *bowling.Game) {
-				for i := 0; i < 10; i++ {
-					g.Roll(0)
-					g.Roll(0)
-				}
+			RollsFn: func(g *bowling.Game) {
+				rollMany(g, 10, 0, 0)
 			},
 			want: 0,
 		},
 		{
-			desc: "Simple game",
-			rollAll: func(g *bowling.Game) {
-				for i := 0; i < 10; i++ {
-					g.Roll(1)
-					g.Roll(1)
-				}
+			desc: "Always 1",
+			RollsFn: func(g *bowling.Game) {
+				rollMany(g, 10, 1, 0)
+			},
+			want: 10,
+		},
+		{
+			desc: "Spare game",
+			RollsFn: func(g *bowling.Game) {
+				g.Roll(1)
+				g.Roll(9)
+				rollMany(g, 9, 1, 0)
 			},
 			want: 20,
 		},
 		{
-			desc: "Spare",
-			rollAll: func(g *bowling.Game) {
-				g.Roll(1)
-				g.Roll(1)
-
-				g.Roll(3)
-				g.Roll(7)
-
-				for i := 0; i < 8; i++ {
-					g.Roll(1)
-					g.Roll(1)
-				}
-			},
-			want: 29,
-		},
-		{
-			desc: "Strike",
-			rollAll: func(g *bowling.Game) {
-				g.Roll(1)
-				g.Roll(1)
-
+			desc: "Strike game",
+			RollsFn: func(g *bowling.Game) {
 				g.Roll(10)
-
 				g.Roll(2)
-				g.Roll(1)
-				for i := 0; i < 7; i++ {
-					g.Roll(1)
-					g.Roll(1)
-				}
+				g.Roll(2)
+				rollMany(g, 8, 0, 0)
 			},
-			want: 32,
+			want: 18,
 		},
 	}
-
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			g := bowling.Game{}
-			tc.rollAll(&g)
+			tc.RollsFn(&g)
 			got := g.Score()
-			if got != tc.want {
-				t.Errorf("got %d, want %d", got, tc.want)
+			want := tc.want
+			if got != want {
+				t.Errorf("got: %d, want: %d", got, want)
 			}
 		})
 	}
 }
 
-func TestPrintRolls(t *testing.T) {
-	buf := bytes.Buffer{}
-	g := bowling.Game{Out: &buf}
-	for i := 0; i < 9; i++ {
-		g.Roll(2)
-		g.Roll(3)
-	}
-	g.Roll(10)
+func TestPrintScoreCard(t *testing.T) {
+	g := bowling.Game{}
+	rollMany(&g, 10, 1, 2)
 
-	g.PrintRolls()
-
-	got := buf.String()
-	want := `2 | 3
-2 | 3
-2 | 3
-2 | 3
-2 | 3
-2 | 3
-2 | 3
-2 | 3
-2 | 3
-10
+	b := bytes.Buffer{}
+	g.PrintScoreCard(&b)
+	got := b.String()
+	want := `1 | 2
+1 | 2
+1 | 2
+1 | 2
+1 | 2
+1 | 2
+1 | 2
+1 | 2
+1 | 2
+1 | 2
 `
+
 	if got != want {
-		t.Errorf("got: \n%s\n\n wanted:\n%s", got, want)
+		t.Errorf("got:\n%s\n want:\n%s", got, want)
+	}
+}
+
+func rollMany(g *bowling.Game, times, score1, score2 int) {
+	for i := 0; i < times; i++ {
+		g.Roll(score1)
+		g.Roll(score2)
 	}
 }
