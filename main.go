@@ -1,17 +1,26 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/gaborszakacs/bowling-golang/bowling"
 )
 
 func main() {
-	g := bowling.Game{Out: os.Stdout}
-	for i := 0; i < 9; i++ {
-		g.Roll(2)
-		g.Roll(3)
+	rollsInput := flag.String("rolls", "", "rolls separated by comma")
+	flag.Parse()
+	rolls := strings.Split(*rollsInput, ",")
+	g := bowling.Game{}
+	for _, roll := range rolls {
+		n, err := strconv.Atoi(roll)
+		if err != nil {
+			os.Exit(1)
+		}
+		g.Roll(n)
 	}
-	g.Roll(10)
-	g.PrintRolls()
+	fmt.Printf("Score: %d", g.Score())
 }
