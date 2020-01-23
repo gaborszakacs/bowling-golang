@@ -25,6 +25,19 @@ func (g *Game) Score() int {
 	return g.sumOfFrames() + g.spareBonus() + g.strikeBonus()
 }
 
+type Gipher interface {
+	Random(string) (string, error)
+}
+
+// Celebrate ...
+func (g *Game) Celebrate(giphy Gipher) (string, error) {
+	url, err := giphy.Random("bowling")
+	if err != nil {
+		return "", err
+	}
+	return url, nil
+}
+
 // PrintRolls ...
 func (g *Game) PrintRolls() {
 	for _, frame := range g.frames {
