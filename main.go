@@ -10,7 +10,7 @@ func main() {
 	g := bowling.Game{Out: os.Stdout}
 	for i := 0; i < 9; i++ {
 		g.Roll(2)
-		g.Roll(4)
+		g.Roll(5)
 	}
 	g.Roll(10)
 	g.PrintRolls()
