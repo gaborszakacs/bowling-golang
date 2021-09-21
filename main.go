@@ -15,3 +15,5 @@ func main() {
 	g.Roll(10)
 	g.PrintRolls()
 }
+
+// dummy comment
